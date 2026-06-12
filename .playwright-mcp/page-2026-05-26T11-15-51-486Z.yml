@@ -1,0 +1,254 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]: Org Governance
+      - heading "组织级别规范" [level=1] [ref=e6]
+      - paragraph [ref=e7]: 面向 AI 编码时代的统一治理框架
+    - generic [ref=e8]:
+      - generic [ref=e9]: 封面
+      - generic [ref=e11]: 01 / 10
+  - generic:
+    - generic:
+      - generic: Why
+      - heading [level=2]: 为什么需要组织级规范
+      - generic:
+        - paragraph: AI 编码能力快速增强，但行为边界、输出稳定性和交付标准并不会自动统一。
+        - generic:
+          - article:
+            - strong: 规则口径不一致
+            - text: 团队之间标准漂移，导致交付质量波动
+          - article:
+            - strong: 安全底线难统一
+            - text: 没有统一红线就会把风险下放到项目现场
+          - article:
+            - strong: 流程容易被跳过
+            - text: 直接写代码会让规格、设计和验证缺位
+          - article:
+            - strong: 治理不可审计
+            - text: 没有统一规范就难形成可检查、可追责的闭环
+    - generic:
+      - generic: 必要性
+      - generic: "02"
+  - generic:
+    - generic:
+      - generic: Principles
+      - heading [level=2]: 四条设计原则
+      - generic:
+        - article:
+          - heading [level=3]: 组织层定义底线，不定义技术栈细节
+          - paragraph: 保持通用约束，不把 Java、Vue、MyBatis 等实现细节塞进组织层。
+        - article:
+          - heading [level=3]: 技术栈层可以更严格，但不能更宽松
+          - paragraph: 技术栈层负责把底线进一步具体化，但不得突破组织约束。
+        - article:
+          - heading [level=3]: 每条规则必须可被 AI 在特定环节执行
+          - paragraph: 规则不是口号，必须能在生成、评审、发布等环节被落实。
+        - article:
+          - heading [level=3]: 无法执行的规则不进入正式约束
+          - paragraph: 确保规则具备落地性，避免只有形式没有执行抓手。
+    - generic:
+      - generic: 设计逻辑
+      - generic: "03"
+  - generic:
+    - generic:
+      - generic: Map
+      - heading [level=2]: 六大部分全景图
+      - generic:
+        - article:
+          - generic: AI
+          - heading [level=3]: AI 编码行为底线
+          - paragraph: 先思考、少假设、精确改动、必须验证
+        - article:
+          - generic: SEC
+          - heading [level=3]: 安全红线
+          - paragraph: 定义绝对不可突破的风险边界
+        - article:
+          - generic: CQ
+          - heading [level=3]: 代码质量规范
+          - paragraph: 错误处理、测试、审查、反模式治理
+        - article:
+          - generic: PL
+          - heading [level=3]: SDD 流程治理
+          - paragraph: proposal 到 implementation 的阶段门禁
+        - article:
+          - generic: ORG
+          - heading [level=3]: Artifact 生成规则
+          - paragraph: 文档职责边界、追溯链路与测试要求
+        - article:
+          - generic: GOV
+          - heading [level=3]: 冲突与豁免机制
+          - paragraph: 冲突裁定、不可豁免范围、审批治理
+    - generic:
+      - generic: 体系地图
+      - generic: "04"
+  - generic:
+    - generic:
+      - generic: Core Lines
+      - heading [level=2]: 三条核心约束主线
+      - generic:
+        - article:
+          - generic: AI 行为
+          - heading [level=3]: AI 编码行为底线
+          - list:
+            - listitem: 编码前必须思考，不假设、不隐藏困惑
+            - listitem: 用最少的代码解决问题，不过度推测
+            - listitem: 只碰必须碰的代码，匹配现有风格
+            - listitem: 定义成功标准，测试先行，循环验证
+        - article:
+          - generic: 安全
+          - heading [level=3]: 安全红线
+          - list:
+            - listitem: 禁止硬编码密钥、密码、token
+            - listitem: 禁止 SQL 拼接，必须参数化查询
+            - listitem: 禁止明文存储密码，必须加盐哈希
+            - listitem: 禁止 eval、反序列化注入等危险操作
+        - article:
+          - generic: 质量
+          - heading [level=3]: 代码质量规范
+          - list:
+            - listitem: 所有错误必须明确上报，不得静默吞掉
+            - listitem: 测试覆盖正常路径和异常路径
+            - listitem: 代码审查不得走过场
+            - listitem: 禁止占位实现、过度注释等 No-Go 反模式
+    - generic:
+      - generic: 核心底线
+      - generic: "05"
+  - generic:
+    - generic:
+      - generic: Pipeline
+      - heading [level=2]: 流程治理
+      - generic:
+        - generic:
+          - strong: proposal
+          - text: 明确为什么做、做什么
+        - generic:
+          - strong: specs
+          - text: 定义行为、输入输出、异常与测试场景
+        - generic:
+          - strong: design
+          - text: 说明如何实现、影响范围与关键决策
+        - generic:
+          - strong: tasks
+          - text: 拆解执行步骤、依赖与验证要求
+        - generic:
+          - strong: implementation
+          - text: 只有在 gate 满足后才进入编码
+      - generic: 主线：proposal → specs → design → tasks → implementation
+      - generic:
+        - paragraph: 每个阶段有 gate（准入条件）和 owner（负责人），不是直接写代码，而是先把目标、规格、设计和任务拆解清楚。
+    - generic:
+      - generic: 研发过程
+      - generic: "06"
+  - generic:
+    - generic:
+      - generic: Artifacts
+      - heading [level=2]: Artifact 规则
+      - generic:
+        - article:
+          - generic: proposal
+          - heading [level=3]: 为什么做、做什么
+          - list:
+            - listitem: 背景与目标
+            - listitem: 变更内容与影响分析
+            - listitem: 非目标边界
+            - listitem: 不得写技术实现方案
+        - article:
+          - generic: specs
+          - heading [level=3]: 需求和行为定义
+          - list:
+            - listitem: 前置条件与输入输出
+            - listitem: 预期行为与异常场景
+            - listitem: 测试场景定义
+            - listitem: 必须可追溯到 proposal
+        - article:
+          - generic: design
+          - heading [level=3]: 如何实现
+          - list:
+            - listitem: 需求引用与变更范围
+            - listitem: 方案设计与数据保护
+            - listitem: 错误处理方案
+            - listitem: 不得过度设计、不得拆分任务
+        - article:
+          - generic: tasks
+          - heading [level=3]: 如何落地执行
+          - list:
+            - listitem: 验收标准与优先级
+            - listitem: 设计引用与前置依赖
+            - listitem: 测试与验证要求
+            - listitem: 每个 task 可独立完成和验证
+      - generic:
+        - paragraph: 每阶段有"不能写什么"的边界，有跨阶段追溯关系，specs 与 tasks 中测试要求贯穿始终。
+    - generic:
+      - generic: 协作边界
+      - generic: "07"
+  - generic:
+    - generic:
+      - generic: Governance
+      - heading [level=2]: 冲突与豁免机制
+      - generic:
+        - article:
+          - heading [level=3]: 默认冲突策略
+          - paragraph:
+            - strong: stricter wins
+            - text: ：更严格者优先；数值取更大、范围取更窄、严重级别取更高。
+        - article:
+          - heading [level=3]: 不可豁免范围
+          - paragraph:
+            - strong: SEC-* 和 NG-* 不可豁免
+            - text: ，安全红线和 No-Go 反模式是组织底线。
+        - article:
+          - heading [level=3]: 可审批豁免
+          - paragraph: AI-*、PL-*、CQ-*、ORG-* 可申请，但需要说明风险、截止时间与补救计划。
+        - article:
+          - heading [level=3]: AI 的裁定边界
+          - paragraph: 遇到无法自动判断的定性冲突，AI 必须停下来询问人工，不得自行拍板。
+    - generic:
+      - generic: 治理裁定
+      - generic: "08"
+  - generic:
+    - generic:
+      - generic: Layer Split
+      - heading [level=2]: 组织层 vs 技术栈层
+      - generic:
+        - article:
+          - generic: 组织层
+          - heading [level=3]: 定义底线
+          - list:
+            - listitem: 原则与规则声明
+            - listitem: 严重级别与执行者
+            - listitem: 通用 detection_principle
+            - listitem: 冲突与豁免治理逻辑
+        - article:
+          - generic: 技术栈层
+          - heading [level=3]: 定义具体检测
+          - list:
+            - listitem: patterns / AST / lint 规则
+            - listitem: false positive 说明
+            - listitem: true positive 示例
+            - listitem: 语言与框架专项约束
+      - generic:
+        - paragraph: 组织层定义底线，不定义技术栈细节；技术栈层可以更严格，但不能更宽松。各技术栈在组织层底线上进一步具体化检测规则。
+    - generic:
+      - generic: 职责分层
+      - generic: "09"
+  - generic:
+    - generic:
+      - generic: Closing
+      - heading [level=2]: 总结与推行建议
+      - paragraph: 组织级规范不是为了增加文档负担，而是为了让 AI 时代的软件交付更可控、更一致、更可审计。
+      - generic:
+        - article:
+          - generic: "1"
+          - heading [level=3]: 统一组织层底线
+          - paragraph: 先让所有团队对安全红线、质量底线和流程门禁形成共识
+        - article:
+          - generic: "2"
+          - heading [level=3]: 补齐技术栈层规则
+          - paragraph: 各技术栈在底线之上定义具体的检测模式和框架专项约束
+        - article:
+          - generic: "3"
+          - heading [level=3]: 形成执行闭环
+          - paragraph: 接入 AI 自动检测、CI/CD 平台门禁和人工审批，让规则真正落地
+    - generic:
+      - generic: 行动方向
+      - generic: "10"

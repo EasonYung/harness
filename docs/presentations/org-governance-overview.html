@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>组织级别规范总览</title>
+    <link rel="icon" href="data:," />
+    <style>
+      :root {
+        --bg-1: #0b1020;
+        --bg-2: #111936;
+        --panel: rgba(17, 25, 54, 0.72);
+        --panel-border: rgba(99, 179, 237, 0.22);
+        --text-main: #eef4ff;
+        --text-sub: #a9b7d9;
+        --accent: #4de2ff;
+        --accent-2: #7c5cff;
+        --danger: #ff7b72;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; background: radial-gradient(circle at top, #17234d 0%, #090d1b 58%, #06070d 100%); color: var(--text-main); font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+      body { overflow: hidden; }
+
+      .deck {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+      }
+
+      .slide {
+        position: absolute;
+        inset: 0;
+        padding: 56px 72px 88px;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        opacity: 0;
+        transform: translateX(36px);
+        pointer-events: none;
+      }
+
+      .slide {
+        transition: opacity 320ms ease, transform 320ms ease;
+      }
+
+      .slide.is-active {
+        opacity: 1;
+        transform: translateX(0);
+        pointer-events: auto;
+      }
+
+      .slide__eyebrow {
+        color: var(--accent);
+        font-size: 14px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+
+      .slide__title {
+        margin: 12px 0 0;
+        font-size: 46px;
+        line-height: 1.1;
+      }
+
+      .slide__body {
+        display: grid;
+        align-content: center;
+        gap: 24px;
+      }
+
+      .slide__footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--text-sub);
+        font-size: 14px;
+      }
+
+      .page-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .page-indicator__bar {
+        width: 180px;
+        height: 4px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.12);
+        overflow: hidden;
+      }
+
+      .page-indicator__fill {
+        height: 100%;
+        width: 10%;
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      }
+
+      /* ── Content component styles ── */
+
+      .panel {
+        background: linear-gradient(180deg, rgba(17, 25, 54, 0.82), rgba(8, 13, 29, 0.78));
+        border: 1px solid var(--panel-border);
+        border-radius: 20px;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255,255,255,0.05);
+        padding: 28px 32px;
+        backdrop-filter: blur(8px);
+      }
+
+      .panel h3 {
+        margin: 0 0 10px;
+        font-size: 20px;
+        color: var(--text-main);
+      }
+
+      .panel p {
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.6;
+        color: var(--text-sub);
+      }
+
+      .panel .lead {
+        font-size: 18px;
+        color: var(--text-main);
+        margin-bottom: 24px;
+      }
+
+      .grid--two {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+      }
+
+      .summary-cards--four {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .stat-card strong {
+        display: block;
+        font-size: 16px;
+        color: var(--accent);
+        margin-bottom: 6px;
+      }
+
+      .stat-card span {
+        font-size: 14px;
+        color: var(--text-sub);
+        line-height: 1.5;
+      }
+
+      .principle-card {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .principle-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 3px;
+        background: linear-gradient(90deg, var(--accent), transparent);
+      }
+
+      .governance-map {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 20px;
+      }
+
+      .module-card {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .module-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 3px;
+        background: linear-gradient(90deg, var(--accent-2), transparent);
+      }
+
+      .module-card > span {
+        display: inline-block;
+        padding: 3px 12px;
+        border-radius: 6px;
+        background: rgba(77, 226, 255, 0.12);
+        color: var(--accent);
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        margin-bottom: 10px;
+      }
+
+      .module-card h3 {
+        font-size: 18px;
+        margin-bottom: 8px;
+      }
+
+      .module-card p {
+        font-size: 14px;
+      }
+
+      .core-line-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 20px;
+      }
+
+      .core-line-card {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .core-line-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 3px;
+        background: linear-gradient(90deg, var(--danger), transparent);
+      }
+
+      .core-line-card .tag {
+        display: inline-block;
+        padding: 3px 12px;
+        border-radius: 6px;
+        background: rgba(255, 123, 114, 0.14);
+        color: var(--danger);
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      .core-line-card h3 {
+        font-size: 18px;
+        margin-bottom: 8px;
+      }
+
+      .core-line-card ul {
+        margin: 0;
+        padding-left: 18px;
+        font-size: 14px;
+        color: var(--text-sub);
+        line-height: 1.7;
+      }
+
+      .timeline {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .timeline__item {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(180deg, rgba(17, 25, 54, 0.82), rgba(8, 13, 29, 0.78));
+        border: 1px solid var(--panel-border);
+        border-radius: 16px;
+        padding: 20px 16px;
+        text-align: center;
+      }
+
+      .timeline__item::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 3px;
+        background: linear-gradient(90deg, var(--accent), transparent);
+      }
+
+      .timeline__item strong {
+        display: block;
+        font-size: 16px;
+        color: var(--accent);
+        margin-bottom: 8px;
+      }
+
+      .timeline__item span {
+        font-size: 13px;
+        color: var(--text-sub);
+        line-height: 1.5;
+      }
+
+      .note-panel {
+        text-align: center;
+        font-size: 15px;
+        color: var(--accent);
+        letter-spacing: 0.04em;
+      }
+
+      .artifact-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .artifact-card {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .artifact-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 3px;
+        background: linear-gradient(90deg, var(--accent-2), transparent);
+      }
+
+      .artifact-card .stage-tag {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 5px;
+        background: rgba(124, 92, 255, 0.15);
+        color: var(--accent-2);
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .artifact-card h3 {
+        font-size: 17px;
+        margin-bottom: 6px;
+      }
+
+      .artifact-card ul {
+        margin: 0;
+        padding-left: 16px;
+        font-size: 13px;
+        color: var(--text-sub);
+        line-height: 1.6;
+      }
+
+      .artifact-note {
+        text-align: center;
+        font-size: 14px;
+        color: var(--text-sub);
+      }
+
+      .gov-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+      }
+
+      .split-layout {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+      }
+
+      .split-layout__panel {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .chip {
+        display: inline-block;
+        padding: 4px 14px;
+        border-radius: 6px;
+        background: rgba(77, 226, 255, 0.14);
+        color: var(--accent);
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 12px;
+      }
+
+      .chip--secondary {
+        background: rgba(124, 92, 255, 0.14);
+        color: var(--accent-2);
+      }
+
+      .split-layout__panel h3 {
+        font-size: 20px;
+        margin-bottom: 10px;
+      }
+
+      .split-layout__panel ul {
+        margin: 0;
+        padding-left: 20px;
+        font-size: 14px;
+        color: var(--text-sub);
+        line-height: 1.8;
+      }
+
+      .closing-lead {
+        font-size: 18px;
+        color: var(--text-main);
+        line-height: 1.6;
+        margin-bottom: 20px;
+      }
+
+      .steps-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .step-card {
+        text-align: center;
+      }
+
+      .step-card .step-num {
+        display: inline-block;
+        width: 36px; height: 36px;
+        line-height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        color: #fff;
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 12px;
+      }
+
+      .step-card h3 {
+        font-size: 17px;
+        margin-bottom: 6px;
+      }
+
+      .step-card p {
+        font-size: 14px;
+      }
+
+      .hero-subtitle {
+        font-size: 22px;
+        color: var(--text-sub);
+        margin-top: 12px;
+        font-weight: 300;
+      }
+
+      .hero-kicker {
+        display: grid;
+        align-content: center;
+      }
+
+      .deck__page-indicator {
+        position: fixed;
+        bottom: 24px;
+        right: 40px;
+        z-index: 100;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--text-sub);
+        font-size: 14px;
+      }
+
+      .deck__page-indicator .page-indicator__bar {
+        width: 180px;
+        height: 4px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.12);
+        overflow: hidden;
+      }
+
+      .deck__page-indicator .page-indicator__fill {
+        height: 100%;
+        width: 10%;
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
+        transition: width 320ms ease;
+      }
+
+      @media (max-width: 1280px) {
+        .summary-cards--four,
+        .governance-map,
+        .core-line-grid,
+        .artifact-grid,
+        .steps-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .timeline { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="deck" id="deck">
+
+      <!-- ═══ Slide 1: 封面 ═══ -->
+      <section class="slide is-active" data-slide="1">
+        <div class="slide__body">
+          <div class="slide__eyebrow">Org Governance</div>
+          <h1 class="slide__title">组织级别规范</h1>
+          <p class="hero-subtitle">面向 AI 编码时代的统一治理框架</p>
+        </div>
+        <div class="slide__footer">
+          <span>封面</span>
+          <span>01</span>
+        </div>
+      </section>
+
+      <!-- ═══ Slide 2: 为什么需要组织级规范 ═══ -->
+      <section class="slide" data-slide="2">
+        <div class="slide__body hero-kicker">
+          <div class="slide__eyebrow">Why</div>
+          <h2 class="slide__title">为什么需要组织级规范</h2>
+          <div class="panel panel--hero" style="margin-top: 16px;">
+            <p class="lead">AI 编码能力快速增强，但行为边界、输出稳定性和交付标准并不会自动统一。</p>
+            <div class="summary-cards summary-cards--four">
+              <article class="panel stat-card">
+                <strong>规则口径不一致</strong>
+                <span>团队之间标准漂移，导致交付质量波动</span>
+              </article>
+              <article class="panel stat-card">
+                <strong>安全底线难统一</strong>
+                <span>没有统一红线就会把风险下放到项目现场</span>
+              </article>
+              <article class="panel stat-card">
+                <strong>流程容易被跳过</strong>
+                <span>直接写代码会让规格、设计和验证缺位</span>
+              </article>
+              <article class="panel stat-card">
+                <strong>治理不可审计</strong>
+                <span>没有统一规范就难形成可检查、可追责的闭环</span>
+              </article>
+            </div>
+          </div>
+        </div>
+        <div class="slide__footer">
+          <span>必要性</span>
+          <span>02</span>
+        </div>
+      </section>
+
+      <!-- ═══ Slide 3: 四条设计原则 ═══ -->
+      <section class="slide" data-slide="3">
+        <div class="slide__body">
+          <div class="slide__eyebrow">Principles</div>
+          <h2 class="slide__title">四条设计原则</h2>
+          <div class="grid--two" style="margin-top: 16px;">
+            <article class="panel principle-card">
+              <h3>组织层定义底线，不定义技术栈细节</h3>
+              <p>保持通用约束，不把 Java、Vue、MyBatis 等实现细节塞进组织层。</p>
+            </article>
+            <article class="panel principle-card">
+              <h3>技术栈层可以更严格，但不能更宽松</h3>
+              <p>技术栈层负责把底线进一步具体化，但不得突破组织约束。</p>
+            </article>
+            <article class="panel principle-card">
+              <h3>每条规则必须可被 AI 在特定环节执行</h3>
+              <p>规则不是口号，必须能在生成、评审、发布等环节被落实。</p>
+            </article>
+            <article class="panel principle-card">
+              <h3>无法执行的规则不进入正式约束</h3>
+              <p>确保规则具备落地性，避免只有形式没有执行抓手。</p>
+            </article>
+          </div>
+        </div>
+        <div class="slide__footer">
+          <span>设计逻辑</span>
+          <span>03</span>
+        </div>
+      </section>
+
+      <!-- ═══ Slide 4: 六大部分全景图 ═══ -->
+      <section class="slide" data-slide="4">
+        <div class="slide__body">
+          <div class="slide__eyebrow">Map</div>
+          <h2 class="slide__title">六大部分全景图</h2>
+          <div class="governance-map" style="margin-top: 16px;">
+            <article class="panel module-card">
+              <span>AI</span>
+              <h3>AI 编码行为底线</h3>
+              <p>先思考、少假设、精确改动、必须验证</p>
+            </article>
+            <article class="panel module-card">
+              <span>SEC</span>
+              <h3>安全红线</h3>
+              <p>定义绝对不可突破的风险边界</p>
+            </article>
+            <article class="panel module-card">
+              <span>CQ</span>
+              <h3>代码质量规范</h3>
+              <p>错误处理、测试、审查、反模式治理</p>
+            </article>
+            <article class="panel module-card">
+              <span>PL</span>
+              <h3>SDD 流程治理</h3>
+              <p>proposal 到 implementation 的阶段门禁</p>
+            </article>
+            <article class="panel module-card">
+              <span>ORG</span>
+              <h3>Artifact 生成规则</h3>
+              <p>文档职责边界、追溯链路与测试要求</p>
+            </article>
+            <article class="panel module-card">
+              <span>GOV</span>
+              <h3>冲突与豁免机制</h3>
+              <p>冲突裁定、不可豁免范围、审批治理</p>
+            </article>
+          </div>
+        </div>
+        <div class="slide__footer">
+          <span>体系地图</span>
+          <span>04</span>
+        </div>
+      </section>
+
+      <!-- ═══ Slide 5: 三条核心约束主线 ═══ -->
+      <section class="slide" data-slide="5">
+        <div class="slide__body">
+          <div class="slide__eyebrow">Core Lines</div>
+          <h2 class="slide__title">三条核心约束主线</h2>
+          <div class="core-line-grid" style="margin-top: 16px;">
+            <article class="panel core-line-card">
+              <div class="tag">AI 行为</div>
+              <h3>AI 编码行为底线</h3>
+              <ul>
+                <li>编码前必须思考，不假设、不隐藏困惑</li>
+                <li>用最少的代码解决问题，不过度推测</li>
+                <li>只碰必须碰的代码，匹配现有风格</li>
+                <li>定义成功标准，测试先行，循环验证</li>
+              </ul>
+            </article>
+            <article class="panel core-line-card">
+              <div class="tag">安全</div>
+              <h3>安全红线</h3>
+              <ul>
+                <li>禁止硬编码密钥、密码、token</li>
+                <li>禁止 SQL 拼接，必须参数化查询</li>
+                <li>禁止明文存储密码，必须使用安全哈希机制</li>
+                <li>禁止 eval、反序列化注入等危险操作</li>
+              </ul>
+            </article>
+            <article class="panel core-line-card">
+              <div class="tag">质量</div>
+              <h3>代码质量规范</h3>
+              <ul>
+                <li>所有错误必须明确上报，不得静默吞掉</li>
+                <li>测试覆盖正常路径和异常路径</li>
+                <li>代码审查不得走过场</li>
+                <li>禁止占位实现、过度注释等 No-Go 反模式</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+        <div class="slide__footer">
+          <span>核心底线</span>
+          <span>05</span>
+        </div>
+      </section>
+
+      <!-- ═══ Slide 6: 流程治理 ═══ -->
+      <section class="slide" data-slide="6">
+        <div class="slide__body">
+          <div class="slide__eyebrow">Pipeline</div>
+          <h2 class="slide__title">流程治理</h2>
+          <div class="timeline" style="margin-top: 20px;">
+            <div class="timeline__item">
+              <strong>proposal</strong>
+              <span>明确为什么做、做什么</span>
+            </div>
+            <div class="timeline__item">
+              <strong>design</strong>
+              <span>说明如何实现、影响范围与关键决策</span>
+            </div>
+            <div class="timeline__item">
+              <strong>specs</strong>
+              <span>定义行为、输入输出、异常与测试场景</span>
+            </div>
+            <div class="timeline__item">
+              <strong>tasks</strong>
+              <span>拆解执行步骤、依赖与验证要求</span>
+            </div>
+            <div class="timeline__item">
+              <strong>implementation</strong>
+              <span>只有在 gate 满足后才进入编码</span>
+            </div>
+          </div>
+          <div class="panel note-panel">
+            主线：proposal → design → specs → tasks → implementation
+          </div>
+          <div class="panel" style="text-align: center;">
+            <p>每个阶段有 gate（准入条件）和 owner（负责人），不是直接写代码，而是先把目标、规格、设计和任务拆解清楚。</p>
+          </div>
+        </div>
+        <div class="slide__footer">
+          <span>研发过程</span>
+          <span>06</span>
+        </div>
+      </section>
+
+      <!-- ═══ Slide 7: Artifact 规则 ═══ -->
+      <section class="slide" data-slide="7">
+        <div class="slide__body">
+          <div class="slide__eyebrow">Artifacts</div>
+          <h2 class="slide__title">Artifact 规则</h2>
+          <div class="artifact-grid" style="margin-top: 16px;">
+            <article class="panel artifact-card">
+              <div class="stage-tag">proposal</div>
+              <h3>为什么做、做什么</h3>
+              <ul>
+                <li>背景与目标</li>
+                <li>变更内容与影响分析</li>
+                <li>非目标边界</li>
+                <li>不得写技术实现方案</li>
+              </ul>
+            </article>
+            <article class="panel artifact-card">
+              <div class="stage-tag">specs</div>
+              <h3>需求和行为定义</h3>
+              <ul>
+                <li>前置条件与输入输出</li>
+                <li>预期行为与异常场景</li>
+                <li>测试场景定义</li>
+                <li>必须可追溯到 proposal</li>
+              </ul>
+            </article>
+            <article class="panel artifact-card">
+              <div class="stage-tag">design</div>
+              <h3>如何实现</h3>
+              <ul>
+                <li>需求引用与变更范围</li>
+                <li>方案设计与数据保护</li>
+                <li>错误处理方案</li>
+                <li>不得过度设计、不得拆分任务</li>
+              </ul>
+            </article>
+            <article class="panel artifact-card">
+              <div class="stage-tag">tasks</div>
+              <h3>如何落地执行</h3>
+              <ul>
+                <li>验收标准与优先级</li>
+                <li>设计引用与前置依赖</li>
+                <li>测试与验证要求</li>
+                <li>每个 task 可独立完成和验证</li>
+              </ul>
+            </article>
+          </div>
+          <div class="panel artifact-note">
+            <p>每阶段有"不能写什么"的边界，有跨阶段追溯关系，specs 与 tasks 中测试要求贯穿始终。</p>
+          </div>
+        </div>
+        <div class="slide__footer">
+          <span>协作边界</span>
+          <span>07</span>
+        </div>
+      </section>
+
+      <!-- ═══ Slide 8: 冲突与豁免机制 ═══ -->
+      <section class="slide" data-slide="8">
+        <div class="slide__body">
+          <div class="slide__eyebrow">Governance</div>
+          <h2 class="slide__title">冲突与豁免机制</h2>
+          <div class="gov-grid" style="margin-top: 16px;">
+            <article class="panel">
+              <h3>默认冲突策略</h3>
+              <p><strong>stricter wins</strong>：更严格者优先；数值取更大、范围取更窄、严重级别取更高。</p>
+            </article>
+            <article class="panel">
+              <h3>不可豁免范围</h3>
+              <p><strong>SEC-* 和 NG-* 不可豁免</strong>，安全红线和 No-Go 反模式是组织底线。</p>
+            </article>
+            <article class="panel">
+              <h3>可审批豁免</h3>
+              <p>AI-*、PL-*、CQ-*、ORG-* 可申请，但需要说明风险、截止时间与补救计划。</p>
+            </article>
+            <article class="panel">
+              <h3>AI 的裁定边界</h3>
+              <p>遇到无法自动判断的定性冲突，AI 必须停下来询问人工，不得自行拍板。</p>
+            </article>
+          </div>
+        </div>
+        <div class="slide__footer">
+          <span>治理裁定</span>
+          <span>08</span>
+        </div>
+      </section>
+
+      <!-- ═══ Slide 9: 组织层 vs 技术栈层 ═══ -->
+      <section class="slide" data-slide="9">
+        <div class="slide__body">
+          <div class="slide__eyebrow">Layer Split</div>
+          <h2 class="slide__title">组织层 vs 技术栈层</h2>
+          <div class="split-layout" style="margin-top: 16px;">
+            <article class="panel split-layout__panel">
+              <div class="chip">组织层</div>
+              <h3>定义底线</h3>
+              <ul>
+                <li>原则与规则声明</li>
+                <li>严重级别与执行者</li>
+                <li>通用 detection_principle</li>
+                <li>冲突与豁免治理逻辑</li>
+              </ul>
+            </article>
+            <article class="panel split-layout__panel">
+              <div class="chip chip--secondary">技术栈层</div>
+              <h3>定义具体检测</h3>
+              <ul>
+                <li>patterns / AST / lint 规则</li>
+                <li>false positive 说明</li>
+                <li>true positive 示例</li>
+                <li>语言与框架专项约束</li>
+              </ul>
+            </article>
+          </div>
+          <div class="panel" style="text-align: center;">
+            <p>组织层定义底线，不定义技术栈细节；技术栈层可以更严格，但不能更宽松。各技术栈在组织层底线上进一步具体化检测规则。</p>
+          </div>
+        </div>
+        <div class="slide__footer">
+          <span>职责分层</span>
+          <span>09</span>
+        </div>
+      </section>
+
+      <!-- ═══ Slide 10: 总结与推行建议 ═══ -->
+      <section class="slide" data-slide="10">
+        <div class="slide__body">
+          <div class="slide__eyebrow">Closing</div>
+          <h2 class="slide__title">总结与推行建议</h2>
+          <p class="closing-lead">组织级规范不是为了增加文档负担，而是为了让 AI 时代的软件交付更可控、更一致、更可审计。</p>
+          <div class="steps-grid">
+            <article class="panel step-card">
+              <div class="step-num">1</div>
+              <h3>统一组织层底线</h3>
+              <p>先让所有团队对安全红线、质量底线和流程门禁形成共识</p>
+            </article>
+            <article class="panel step-card">
+              <div class="step-num">2</div>
+              <h3>补齐技术栈层规则</h3>
+              <p>各技术栈在底线之上定义具体的检测模式和框架专项约束</p>
+            </article>
+            <article class="panel step-card">
+              <div class="step-num">3</div>
+              <h3>形成执行闭环</h3>
+              <p>接入 AI 自动检测、CI/CD 平台门禁和人工审批，让规则真正落地</p>
+            </article>
+          </div>
+        </div>
+        <div class="slide__footer">
+          <span>行动方向</span>
+          <span>10</span>
+        </div>
+      </section>
+
+    <div class="deck__page-indicator">
+      <span id="page-text">01 / 10</span>
+      <span class="page-indicator__bar"><span class="page-indicator__fill" id="page-fill"></span></span>
+    </div>
+    </main>
+
+    <script>
+      const slides = Array.from(document.querySelectorAll('.slide'));
+      const pageText = document.getElementById('page-text');
+      const pageFill = document.getElementById('page-fill');
+      let currentIndex = 0;
+
+      function renderSlide(index) {
+        currentIndex = Math.max(0, Math.min(index, slides.length - 1));
+        slides.forEach((slide, idx) => {
+          slide.classList.toggle('is-active', idx === currentIndex);
+          slide.setAttribute('aria-hidden', idx === currentIndex ? 'false' : 'true');
+        });
+
+        const page = String(currentIndex + 1).padStart(2, '0');
+        const total = String(slides.length).padStart(2, '0');
+        pageText.textContent = `${page} / ${total}`;
+        requestAnimationFrame(() => {
+          pageFill.style.width = `${((currentIndex + 1) / slides.length) * 100}%`;
+        });
+      }
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowRight' || event.key === 'PageDown' || event.key === ' ') {
+          event.preventDefault();
+          renderSlide(currentIndex + 1);
+        }
+        if (event.key === 'ArrowLeft' || event.key === 'PageUp') {
+          event.preventDefault();
+          renderSlide(currentIndex - 1);
+        }
+        if (event.key === 'Home') {
+          event.preventDefault();
+          renderSlide(0);
+        }
+        if (event.key === 'End') {
+          event.preventDefault();
+          renderSlide(slides.length - 1);
+        }
+      });
+
+      renderSlide(0);
+    </script>
+  </body>
+</html>

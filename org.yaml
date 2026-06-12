@@ -1,0 +1,424 @@
+schema: org-governance
+version: "3.2"
+updated_at: "2026-06-02"
+owner: "架构组"
+
+# ═══════════════════════════════════════════════════════════════
+# 组织层治理约束 — 唯一 Source of Truth
+# ═══════════════════════════════════════════════════════════════
+# 适用于所有工程、所有产品、所有技术栈的 SDD 组织级治理约束。
+# 具体检测模式（正则、AST、工具规则）由技术栈层定义。
+# 本文件仅声明规则意图、严重级别与执行边界。
+
+# ───────────────────────────────────────────────────────────────
+# 元信息
+# ───────────────────────────────────────────────────────────────
+
+meta:
+  name: "组织层治理约束"
+  description: "适用于所有工程、所有产品、所有技术栈的 SDD 组织级治理约束"
+  applies_to: [all_projects]
+  principles:
+    - "组织层定义底线，不定义技术栈细节"
+    - "技术栈层可以更严格，但不能更宽松"
+    - "每条规则必须可被 AI 在特定环节执行"
+    - "无法执行的规则不进入正式约束"
+    - "具体检测模式（正则、AST、工具规则）由技术栈层定义；组织层仅声明规则意图与严重级别"
+
+  # 严重级别定义
+  severity_levels:
+    block:
+      description: "AI 必须遵守，违反时停止执行并告知用户原因"
+      action: "停止当前操作，报告违规规则 ID，等待用户明确指示后再继续"
+    warn:
+      description: "AI 应遵守，违反时提醒用户但不阻止执行"
+      action: "继续执行，但在输出中标注警告及规则 ID，建议用户评估风险"
+
+  # 执行级别定义
+  enforcement_levels:
+    prompt-only:
+      description: "通过 prompt 注入约束 AI 行为，无法自动检测违规"
+      verification: "依赖 AI 自律 + 人工 review"
+    lintable:
+      description: "可通过静态分析工具自动检测违规"
+      verification: "技术栈层实现 lint 规则或 AST 检查模式"
+    ci-gate:
+      description: "CI 流水线中强制检查，违规则阻断合并或部署"
+      verification: "技术栈层实现 CI 检查步骤，组织层定义通过标准"
+
+  # 治理本身的规则
+  governance:
+    change_process:
+      - "规则变更由架构组发起，需至少 1 名技术负责人评审"
+      - "主版本变更（结构调整、新增必填章节）需团队骨干讨论通过"
+      - "次版本变更（新增单条规则、修改描述）架构组自行决定，通知相关工程负责人"
+    review_cadence: "每季度 review 一次全量规则"
+    layer_placement:
+      - "若规则依赖特定语言/框架才能检测，放技术栈层"
+      - "若规则对所有技术栈均适用且无技术差异，放组织层"
+      - "不确定时先放技术栈层，验证通用性后再提升到组织层"
+
+  trigger_vocabulary:
+    description: "OpenSpec 工作流触发机制——skill 根据当前命令和正在处理的 artifact 双重过滤规则"
+    commands:
+      propose:
+        description: "创建新的 change proposal"
+        slash_commands: ["/opsx:propose", "/sdd-po-propose", "/opsx:new"]
+        produces: [proposal]
+        primary_rules: [ORG-P-*, AI-001, AI-003]
+      continue:
+        description: "继续已有 change，生成/更新 design、specs、tasks"
+        slash_commands: ["/opsx:continue"]
+        produces: [specs, design, tasks]
+        primary_rules: [ORG-D-*, ORG-S-*, ORG-T-*, AI-*]
+      apply:
+        description: "实现 tasks 中的编码任务"
+        slash_commands: ["/opsx:apply"]
+        produces: [code, test]
+        primary_rules: [SEC-*, CQ-*, NG-*, AI-004, AI-006, AI-007, AI-008, AI-009, PERF-*, OBS-*]
+      verify:
+        description: "验证实现与 specs/tasks 的一致性"
+        slash_commands: ["/opsx:verify"]
+        produces: [code, test]
+        primary_rules: [CQ-003, CQ-004, CQ-006, CR-*, AI-009]
+      archive:
+        description: "归档已完成的 change"
+        slash_commands: ["/opsx:archive"]
+        produces: []
+        primary_rules: []
+      sync:
+        description: "同步 specs 到主规范"
+        slash_commands: ["/opsx:sync", "/sdd-sync-harness"]
+        produces: []
+        primary_rules: []
+    artifacts:
+      proposal: { description: "proposal.md — 业务需求与变更范围" }
+      design: { description: "design.md — 技术方案设计" }
+      specs: { description: "specs/*.md — 需求行为定义与测试场景" }
+      tasks: { description: "tasks.md — 实施任务拆解" }
+      code: { description: "代码变更 — 实际编码产出" }
+      test: { description: "测试代码 — 单元测试、集成测试、E2E 测试" }
+    activation: "skill 在执行 OpenSpec 命令时，根据当前命令和正在生成的 artifact 双重过滤规则，将匹配的规则注入 AI 上下文"
+
+  # 执行级红线摘要（跨章节强制性红线，供 AI 快速决策）
+  # 每条红线标注了对应的结构化规则 ID，便于追溯
+  red_lines:
+    - rule: "不得引入未经核实的第三方依赖、API 或许可证不兼容组件"
+      refs: [DEP-001, DEP-002]
+    - rule: "禁止开发直连生产库写数据"
+      refs: [SEC-DB-001, SEC-DB-004]
+    - rule: "高风险 AI 变更必须人工最终批准后方可合并或上线"
+      refs: [AI-010]
+    - rule: "生产 UPDATE 或 DELETE 必须先确认影响范围并留痕"
+      refs: [SEC-DB-002, SEC-DB-003]
+    - rule: "所有上线必须有回滚方案"
+      refs: [ORG-D-006]
+
+# ───────────────────────────────────────────────────────────────
+# 数据分级定义
+# ───────────────────────────────────────────────────────────────
+# 数据分级与规则绑定：SEC-004（日志安全）明确禁止在日志中输出 sensitive/secret 数据；
+# SEC-007（数据处理安全）要求对 sensitive/secret 数据的传输和存储做额外保护；
+# SEC-001（禁止硬编码）禁止 secret 级数据出现在代码或 artifact 中；
+# 测试数据规则（TEST-001）禁止使用 sensitive/secret 真实数据做测试。
+# ───────────────────────────────────────────────────────────────
+
+data_classification:
+  levels:
+    - name: public
+      description: "公开信息，无限制"
+      rules: []
+    - name: internal
+      description: "内部信息，API 响应需脱敏"
+      rules: [SEC-004]
+    - name: sensitive
+      description: "敏感业务数据，禁止出现在日志中，禁止真实数据做测试"
+      rules: [SEC-001, SEC-004, SEC-007, TEST-001]
+    - name: secret
+      description: "核心密钥，禁止出现在任何代码和 artifact 中，必须通过密钥管理服务获取"
+      rules: [SEC-001, SEC-004, SEC-007, TEST-001]
+  default_level: internal
+  handling_rules:
+    - "internal 级数据不得在前端代码中直接暴露"
+    - "处理 sensitive/secret 数据的变更，proposal 阶段必须在影响分析中标注数据级别"
+    - "涉及 sensitive 数据的 design.md 必须包含数据保护方案章节"
+    - "涉及 sensitive/secret 数据的代码变更，apply 阶段必须包含数据保护审查点"
+
+# ───────────────────────────────────────────────────────────────
+# context_rendering: 定义如何将结构化规则渲染为 AI 可消费的文本
+# ───────────────────────────────────────────────────────────────
+# 本节是声明式渲染配置，由 org/scripts/render-context.mjs 脚本读取。
+# 脚本按 phase 过滤规则，生成精简的 markdown 文本注入 AI prompt。
+# 不再有手工维护的 context_injection——渲染输出即为唯一消费版。
+
+context_rendering:
+  # 通用规则：所有阶段都注入
+  common_groups:
+    - title: "治理原则"
+      source: "meta.principles"
+      format: "bullet_list"
+    - title: "严重级别"
+      source: "meta.severity_levels"
+      format: "key_value"
+    - title: "数据分级"
+      source: "data_classification"
+      format: "data_classification"
+    - title: "AI 行为底线"
+      source: "ai_behavior"
+      format: "severity_tagged"
+    - title: "语言规范"
+      source: "language"
+      format: "severity_tagged"
+    - title: "命名规范"
+      source: "naming"
+      format: "severity_tagged"
+
+  # 阶段专属规则
+  phases:
+    propose:
+      description: "创建 proposal 时注入"
+      groups:
+        - title: "Proposal 规则"
+          source: "artifact_rules.proposal.rules"
+          format: "bullet_list"
+        - title: "依赖管理"
+          source: "dependency_management"
+          format: "severity_tagged"
+
+    continue:
+      description: "生成 specs/design/tasks 时注入"
+      sub_phases:
+        specs:
+          groups:
+            - title: "Specs 规则"
+              source: "artifact_rules.specs.rules"
+              format: "bullet_list"
+            - title: "安全红线"
+              source: "security"
+              filter: { severity: block, id_prefix: "SEC-", exclude_prefix: "SEC-DB" }
+              format: "numbered_list"
+        design:
+          groups:
+            - title: "Design 规则"
+              source: "artifact_rules.design.rules"
+              format: "bullet_list"
+            - title: "数据库安全底线"
+              source: "security"
+              filter: { id_prefix: "SEC-DB" }
+              format: "bullet_list"
+            - title: "依赖管理"
+              source: "dependency_management"
+              format: "severity_tagged"
+        tasks:
+          groups:
+            - title: "Tasks 规则"
+              source: "artifact_rules.tasks.rules"
+              format: "bullet_list"
+
+    apply:
+      description: "实现编码任务时注入"
+      groups:
+        - title: "安全红线（不可违反）"
+          source: "security"
+          filter: { severity: block, exclude_prefix: "SEC-DB" }
+          format: "numbered_list"
+        - title: "数据库安全底线"
+          source: "security"
+          filter: { id_prefix: "SEC-DB" }
+          format: "bullet_list"
+        - title: "代码质量"
+          source: "code_quality"
+          format: "severity_tagged"
+        - title: "性能底线"
+          source: "performance"
+          format: "severity_tagged"
+        - title: "可观测性"
+          source: "observability"
+          format: "severity_tagged"
+        - title: "DDL/DML 目录约定"
+          source: "conventions"
+          format: "severity_tagged"
+        - title: "Apply 阶段规则"
+          source: "artifact_rules.apply.rules"
+          format: "bullet_list"
+
+    verify:
+      description: "验证实现一致性时注入"
+      groups:
+        - title: "代码质量（verify 相关）"
+          source: "code_quality"
+          filter: { id: ["CQ-003", "CQ-004", "CQ-006"] }
+          format: "severity_tagged"
+        - title: "代码审查"
+          source: "code_review"
+          format: "severity_tagged"
+
+  # 渲染格式配置
+  severity_labels:
+    block: "(block)"
+    warn: "(warn)"
+  id_format: "[{id}]"
+
+# ═══════════════════════════════════════════════════════════════
+# 以下为结构化规则索引（带 ID，供 skill 提取和追溯）
+# ═══════════════════════════════════════════════════════════════
+
+ai_behavior:
+  - { id: AI-001, rule: "实现前说明对需求的理解和假设；有歧义时列出所有解读让用户选择", severity: block, enforcement: prompt-only }
+  - { id: AI-002, rule: "发现更简单方案时提出异议而非盲目执行", severity: warn, enforcement: prompt-only }
+  - { id: AI-003, rule: "不确定时停下来查阅或询问，不得猜测或虚构", severity: block, enforcement: prompt-only }
+  - { id: AI-004, rule: "只实现明确要求的功能，不引入未经要求的新依赖", severity: block, enforcement: lintable }
+  - { id: AI-005, rule: "不为一次性场景创建抽象层，复杂度过高时简化", severity: warn, enforcement: prompt-only }
+  - { id: AI-006, rule: "只碰必须碰的代码，不改动无关内容", severity: block, enforcement: prompt-only }
+  - { id: AI-007, rule: "每行修改须追溯到原始请求", severity: block, enforcement: prompt-only }
+  - { id: AI-008, rule: "任务转化为可验证成功标准，多步骤先列计划", severity: block, enforcement: prompt-only }
+  - { id: AI-009, rule: "编码后必须验证并报告结果；修复 bug 须先写重现测试", severity: block, enforcement: ci-gate }
+  - { id: AI-010, rule: "高风险变更必须人工最终批准后方可合并或上线", severity: block, enforcement: ci-gate }
+  - { id: AI-011, rule: "不得重构没坏的东西，即使认为有更好的写法", severity: warn, enforcement: prompt-only }
+  - { id: AI-012, rule: "不为不太可能发生的场景写错误处理", severity: warn, enforcement: prompt-only }
+  - { id: AI-013, rule: "代码量超过必要复杂度时必须简化，能 50 行解决的不要写 200 行", severity: warn, enforcement: prompt-only }
+  - { id: AI-014, rule: "自己引入的无用 import/变量/函数必须清理；预先存在的死代码只提示不删除", severity: warn, enforcement: lintable }
+
+security:
+  - { id: SEC-001, rule: "禁止硬编码密钥、密码、token、secret", severity: block, enforcement: lintable }
+  - { id: SEC-002, rule: "禁止拼接 SQL，必须参数化查询", severity: block, enforcement: lintable }
+  - { id: SEC-003, rule: "禁止明文存储密码", severity: block, enforcement: lintable }
+  - { id: SEC-004, rule: "禁止日志输出 sensitive/secret 数据或使用不安全日志配置", severity: block, enforcement: lintable }
+  - { id: SEC-005, rule: "禁止动态执行、反序列化或注入机制处理不可信输入", severity: block, enforcement: lintable }
+  - { id: SEC-006, rule: "禁止关闭安全校验或使用不安全默认配置", severity: block, enforcement: lintable }
+  - { id: SEC-007, rule: "禁止不安全数据处理（URL 敏感参数、SSRF、路径穿越）", severity: block, enforcement: lintable }
+  - { id: SEC-008, rule: "禁止缺失访问控制", severity: block, enforcement: lintable }
+  - { id: SEC-DB-001, rule: "数据库连接信息禁止硬编码，必须使用环境变量或配置中心；账号区分只读/读写权限，查询只用只读用户", severity: block, enforcement: ci-gate }
+  - { id: SEC-DB-002, rule: "DDL/DML 变更先落脚本（含目的、影响、回滚），不得由 AI 直接执行", severity: block, enforcement: ci-gate }
+  - { id: SEC-DB-003, rule: "脚本落盘后等人工确认方可执行", severity: block, enforcement: ci-gate }
+  - { id: SEC-DB-004, rule: "生产环境禁止开发直连写数据", severity: block, enforcement: ci-gate }
+  - { id: SEC-DB-005, rule: "批量数据操作必须有事务保护", severity: block, enforcement: ci-gate }
+
+code_quality:
+  - { id: CQ-001, rule: "错误必须明确上报，不得静默吞异常", severity: block, enforcement: lintable }
+  - { id: CQ-002, rule: "错误信息须具体且含可操作恢复建议", severity: warn, enforcement: prompt-only }
+  - { id: CQ-003, rule: "测试覆盖正常+异常路径；bugfix 含回归测试", severity: block, enforcement: ci-gate }
+  - { id: CQ-004, rule: "禁止空测试、skip 测试或仅验证不抛异常的测试", severity: warn, enforcement: ci-gate }
+  - { id: CQ-005, rule: "新增代码的单元测试行覆盖率必须超过 80%", severity: block, enforcement: ci-gate }
+  - { id: CQ-006, rule: "禁止绕过类型检查（as any / @ts-ignore / @ts-expect-error / eslint-disable）", severity: block, enforcement: lintable }
+  - { id: CQ-007, rule: "超时场景必须显式处理，不得依赖无限等待", severity: warn, enforcement: prompt-only }
+  - { id: CQ-008, rule: "测试描述须说明测试意图而非实现细节", severity: warn, enforcement: prompt-only }
+  - { id: CQ-009, rule: "涉及数据处理的功能必须测试边界值（空值、超长、特殊字符、null）", severity: warn, enforcement: prompt-only }
+  - { id: NG-001, rule: "不得生成占位实现（TODO/FIXME/HACK）作为最终交付", severity: warn, enforcement: lintable }
+  - { id: NG-002, rule: "不得过度注释或重复代码已表达的内容", severity: warn, enforcement: prompt-only }
+
+dependency_management:
+  - { id: DEP-001, rule: "禁止引入未经核实的第三方依赖（需确认许可证兼容、维护状态、安全漏洞）", severity: block, enforcement: prompt-only }
+  - { id: DEP-002, rule: "新增依赖必须在 design 中说明理由和替代方案评估", severity: block, enforcement: prompt-only }
+  - { id: DEP-003, rule: "依赖升级必须走变更流程，大版本升级需独立 change", severity: warn, enforcement: prompt-only }
+
+performance:
+  - { id: PERF-001, rule: "禁止已知 N+1 查询模式进入交付", severity: block, enforcement: lintable }
+  - { id: PERF-002, rule: "批量操作必须分页或流式处理，禁止全量加载", severity: block, enforcement: lintable }
+  - { id: PERF-003, rule: "涉及外部调用的循环必须评估批量或缓存方案", severity: warn, enforcement: prompt-only }
+
+observability:
+  - { id: OBS-001, rule: "关键业务操作必须有结构化日志", severity: block, enforcement: lintable }
+  - { id: OBS-002, rule: "外部调用必须记录耗时和结果状态", severity: block, enforcement: lintable }
+  - { id: OBS-003, rule: "错误日志必须包含足够上下文用于定位（请求 ID、操作名、关键参数——脱敏后）", severity: block, enforcement: lintable }
+
+test_data:
+  - { id: TEST-001, rule: "禁止使用 sensitive/secret 级别真实数据做开发和测试", severity: block, enforcement: ci-gate }
+
+artifact_rules:
+  proposal:
+    required_sections: ["背景与目标（Why）", "变更内容（What Changes）", "非目标（Non-Goals）", "能力描述（Capabilities）", "影响分析（Impact）"]
+    rules:
+      - { id: ORG-P-001, rule: "中文撰写，聚焦需求范围，不写技术实现" }
+      - { id: ORG-P-002, rule: "影响分析含：受影响系统、数据变更、接口变更" }
+      - { id: ORG-P-003, rule: "涉及敏感数据/风险/迁移/权限时标注影响和回退" }
+      - { id: ORG-P-004, rule: "接口字段变更时业务层面标注范围，技术细节留 design/specs" }
+      - { id: ORG-P-005, rule: "能力描述可映射为后续独立 spec" }
+      - { id: ORG-P-006, rule: "涉及 sensitive/secret 数据的变更必须标注数据级别" }
+
+  design:
+    rules:
+      - { id: ORG-D-001, rule: "引用 proposal 需求范围，不重复业务描述" }
+      - { id: ORG-D-002, rule: "说明变更影响范围（模块、文件、接口）" }
+      - { id: ORG-D-003, rule: "数据存储→保护方案；外部接口→错误处理方案" }
+      - { id: ORG-D-004, rule: "不过度设计，不违反技术栈约束，优先复用已有模式" }
+      - { id: ORG-D-005, rule: "接口字段变更时含完整接口设计" }
+      - { id: ORG-D-006, rule: "变更涉及上线时必须包含回滚方案" }
+      - { id: ORG-D-007, rule: "新增依赖必须说明理由和替代方案评估" }
+
+  specs:
+    rules:
+      - { id: ORG-S-001, rule: "每个 spec 聚焦单一行为，追溯到 design 方案点" }
+      - { id: ORG-S-002, rule: "含前置条件、输入、预期行为、异常场景、测试场景" }
+      - { id: ORG-S-003, rule: "不含实现代码和 SQL，可含接口定义和返回值结构" }
+      - { id: ORG-S-004, rule: "正常+异常场景（异常≥1），数据处理标注安全级别" }
+
+  tasks:
+    rules:
+      - { id: ORG-T-001, rule: "每个 task 有验收标准，追溯到 design 方案点" }
+      - { id: ORG-T-002, rule: "代码变更 task 含测试要求；接口字段变更含同步更新任务" }
+      - { id: ORG-T-003, rule: "粒度可独立完成验证，标注优先级和依赖关系" }
+
+  apply:
+    rules:
+      - { id: ORG-A-001, rule: "只碰必须碰的代码，匹配现有代码风格" }
+      - { id: ORG-A-002, rule: "每行修改须追溯到 tasks 中的具体 task" }
+      - { id: ORG-A-003, rule: "编码后必须执行验证并报告结果" }
+      - { id: ORG-A-004, rule: "安全规则（SEC-*）全部适用，不可豁免" }
+      - { id: ORG-A-007, rule: "新增代码的单元测试行覆盖率必须超过 80% [CQ-005]" }
+      - { id: ORG-A-005, rule: "性能规则（PERF-*）全部适用" }
+      - { id: ORG-A-006, rule: "可观测性规则（OBS-*）全部适用" }
+
+# ───────────────────────────────────────────────────────────────
+# 代码审查标准
+# ───────────────────────────────────────────────────────────────
+
+code_review:
+  - { id: CR-001, rule: "编译/解析失败、确定错误结果、违反安全红线的代码必须标记", severity: block, enforcement: ci-gate }
+  - { id: CR-002, rule: "代码风格偏好、linter 可检测、无关预存问题不得标记为阻塞", severity: warn, enforcement: prompt-only }
+  - { id: CR-003, rule: "至少 1 名 reviewer 审批后方可合并", severity: block, enforcement: ci-gate }
+
+# ───────────────────────────────────────────────────────────────
+# 命名规范
+# ───────────────────────────────────────────────────────────────
+
+naming:
+  - { id: NAM-001, rule: "change 命名格式：{type}/{product}/{desc}，类型限 feature/bugfix/refactor/enhancement，使用英文", severity: block, enforcement: lintable }
+  - { id: NAM-002, rule: "分支名必须与 change 名一致", severity: block, enforcement: lintable }
+  - { id: NAM-003, rule: "artifact 文件名遵循约定：proposal.md / specs/*.md / design.md / tasks.md", severity: block, enforcement: lintable }
+
+# ───────────────────────────────────────────────────────────────
+# 语言规范
+# ───────────────────────────────────────────────────────────────
+
+language:
+  - { id: LANG-001, rule: "artifact 使用正式书面中文撰写，技术术语可保留英文（如 JWT（JSON Web Token））", severity: block, enforcement: prompt-only }
+  - { id: LANG-002, rule: "artifact 禁止口语化表达，中英文混排须加空格", severity: warn, enforcement: lintable }
+  - { id: LANG-003, rule: "代码注释使用中文，标识符使用英文", severity: block, enforcement: lintable }
+
+# ───────────────────────────────────────────────────────────────
+# DDL/DML 目录约定
+# ───────────────────────────────────────────────────────────────
+
+conventions:
+  - { id: CONV-001, rule: "DDL 脚本存放于 db/migrations/，DML 脚本存放于 db/data-fixes/", severity: block, enforcement: lintable }
+  - { id: CONV-002, rule: "DDL/DML 脚本文件命名：{date}_{brief_description}.sql", severity: warn, enforcement: lintable }
+  - { id: CONV-003, rule: "DDL/DML 脚本须包含：目的说明、影响范围评估、回滚方案", severity: block, enforcement: ci-gate }
+
+conflict_policy:
+  strategy: "stricter_wins"
+  rules:
+    - "组织层与下层冲突时取更严格者"
+    - "严重级别：block > warn，不可降级"
+    - "执行级别：ci-gate > lintable > prompt-only，不可降级"
+    - "SEC-* 和 NG-* 规则不可豁免（无论冲突情况）"
+    - "无法判断严格程度时，组织层优先"
+
+exemption:
+  scope: "CQ-*、ORG-*、AI-*、PERF-*、OBS-*、DEP-*、CR-*、NAM-*、LANG-*、CONV-* 可申请豁免；SEC-*、NG-*、TEST-001 不可豁免"
+  required_fields: [constraint_id, reason, risk_assessment, owner, expires_at]
+  process:
+    - "提交人填写 required_fields 并提交至架构组"
+    - "架构组评审风险，决定是否批准"
+    - "批准后记录在项目 openspec/ 目录下的 exemption.yaml 中"
+    - "豁免有效期最长 90 天，到期需重新申请或修改规则"
