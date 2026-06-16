@@ -1,0 +1,20 @@
+id: typescript
+label: TypeScript
+rules:
+  - { id: TS-001, rule: "禁止使用 any；确需宽松类型时用 unknown 并注释原因", severity: warn, enforcement: lintable }
+  - { id: TS-002, rule: "公共 API 与导出函数必须显式标注返回类型", severity: warn, enforcement: lintable }
+  - { id: TS-003, rule: "优先用 type 定义联合/工具类型，用 interface 描述可被实现的对象形状", severity: warn, enforcement: prompt-only }
+  - { id: TS-T-001, rule: "任务拆分须对齐到单一模块/类型边界，单任务不跨层", severity: warn, enforcement: prompt-only }
+rendering:
+  common_groups:
+    - title: "TypeScript 约束"
+      source: "rules"
+      filter: { exclude_prefix: "TS-T-" }
+      format: "severity_tagged"
+  phases:
+    tasks:
+      groups:
+        - title: "TypeScript 任务约束"
+          source: "rules"
+          filter: { id_prefix: "TS-T-" }
+          format: "severity_tagged"

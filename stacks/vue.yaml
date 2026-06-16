@@ -1,0 +1,11 @@
+id: vue
+label: Vue
+rules:
+  - { id: VUE-001, rule: "组件统一使用 <script setup> 语法", severity: warn, enforcement: lintable }
+  - { id: VUE-002, rule: "props 用 defineProps 做显式类型化，禁止 any", severity: warn, enforcement: lintable }
+  - { id: VUE-003, rule: "状态变更走响应式 API（ref/reactive），禁止直接突变非响应式对象", severity: warn, enforcement: prompt-only }
+rendering:
+  common_groups:
+    - title: "Vue 约束"
+      source: "rules"
+      format: "severity_tagged"
