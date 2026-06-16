@@ -259,9 +259,45 @@ context_rendering:
     warn: "(warn)"
   id_format: "[{id}]"
 
+  # 技术栈专属规则（第二层治理）：按探测到的栈过滤渲染，追加进 context/rules。
+  # 形状与 common_groups/phases 一致，source 指向下方 stack_rules 域。
+  # 种子示例（typescript/vue 各几条），请按需扩充；ID 前缀区分通用/阶段专属，
+  # 避免同一条规则被去重逻辑跨字段误判（如 TS-T-* 只进 tasks，TS-* 只进 context）。
+  stacks:
+    typescript:
+      common_groups:
+        - title: "TypeScript 约束"
+          source: "stack_rules.typescript"
+          filter: { exclude_prefix: "TS-T-" }
+          format: "severity_tagged"
+      phases:
+        tasks:
+          groups:
+            - title: "TypeScript 任务约束"
+              source: "stack_rules.typescript"
+              filter: { id_prefix: "TS-T-" }
+              format: "severity_tagged"
+    vue:
+      common_groups:
+        - title: "Vue 约束"
+          source: "stack_rules.vue"
+          format: "severity_tagged"
+
 # ═══════════════════════════════════════════════════════════════
 # 以下为结构化规则索引（带 ID，供 skill 提取和追溯）
 # ═══════════════════════════════════════════════════════════════
+
+# 技术栈专属规则索引（第二层治理）——种子示例，请按栈扩充
+stack_rules:
+  typescript:
+    - { id: TS-001, rule: "禁止使用 any；确需宽松类型时用 unknown 并注释原因", severity: warn, enforcement: lintable }
+    - { id: TS-002, rule: "公共 API 与导出函数必须显式标注返回类型", severity: warn, enforcement: lintable }
+    - { id: TS-003, rule: "优先用 type 定义联合/工具类型，用 interface 描述可被实现的对象形状", severity: warn, enforcement: prompt-only }
+    - { id: TS-T-001, rule: "任务拆分须对齐到单一模块/类型边界，单任务不跨层", severity: warn, enforcement: prompt-only }
+  vue:
+    - { id: VUE-001, rule: "组件统一使用 <script setup> 语法", severity: warn, enforcement: lintable }
+    - { id: VUE-002, rule: "props 用 defineProps 做显式类型化，禁止 any", severity: warn, enforcement: lintable }
+    - { id: VUE-003, rule: "状态变更走响应式 API（ref/reactive），禁止直接突变非响应式对象", severity: warn, enforcement: prompt-only }
 
 ai_behavior:
   - { id: AI-001, rule: "实现前说明对需求的理解和假设；有歧义时列出所有解读让用户选择", severity: block, enforcement: prompt-only }
