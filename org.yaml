@@ -1,6 +1,6 @@
 schema: org-governance
-version: "3.2"
-updated_at: "2026-06-02"
+version: "4.0"
+updated_at: "2026-06-17"
 owner: "架构组"
 
 # ═══════════════════════════════════════════════════════════════
@@ -58,6 +58,17 @@ meta:
       - "若规则对所有技术栈均适用且无技术差异，放组织层"
       - "不确定时先放技术栈层，验证通用性后再提升到组织层"
 
+  # SDD artifact 生成顺序与追溯关系
+  # continue 阶段严格按 order 顺序产出；每个 artifact 只能追溯到顺序中先于它生成的 artifact。
+  artifact_pipeline:
+    description: "artifact 生成顺序与追溯关系——continue 阶段按此顺序产出"
+    order: [proposal, specs, design, tasks]
+    flow:
+      - { artifact: proposal, produced_by: "propose", traces_to: null, note: "业务需求与变更范围，流程起点" }
+      - { artifact: specs, produced_by: "continue", traces_to: "proposal", note: "需求行为定义，追溯 proposal 能力点；先于 design 生成" }
+      - { artifact: design, produced_by: "continue", traces_to: [proposal, specs], note: "技术方案，回应 proposal 需求范围与 specs 行为定义" }
+      - { artifact: tasks, produced_by: "continue", traces_to: "design", note: "实施任务拆解，追溯 design 方案点" }
+
   trigger_vocabulary:
     description: "OpenSpec 工作流触发机制——skill 根据当前命令和正在处理的 artifact 双重过滤规则"
     commands:
@@ -93,8 +104,8 @@ meta:
         primary_rules: []
     artifacts:
       proposal: { description: "proposal.md — 业务需求与变更范围" }
-      design: { description: "design.md — 技术方案设计" }
       specs: { description: "specs/*.md — 需求行为定义与测试场景" }
+      design: { description: "design.md — 技术方案设计" }
       tasks: { description: "tasks.md — 实施任务拆解" }
       code: { description: "代码变更 — 实际编码产出" }
       test: { description: "测试代码 — 单元测试、集成测试、E2E 测试" }
@@ -187,6 +198,14 @@ context_rendering:
 
     continue:
       description: "生成 specs/design/tasks 时注入"
+      groups:
+        - title: "Artifact 生成顺序"
+          source: "meta.artifact_pipeline"
+          format: "static"
+          content: |
+            顺序：proposal → specs → design → tasks
+            追溯：specs→proposal；design→proposal+specs；tasks→design
+            约束：每个 artifact 只能追溯到先于它生成的 artifact（spec 不得引用尚未生成的 design）
       sub_phases:
         specs:
           groups:
@@ -340,22 +359,22 @@ artifact_rules:
       - { id: ORG-P-005, rule: "能力描述可映射为后续独立 spec" }
       - { id: ORG-P-006, rule: "涉及 sensitive/secret 数据的变更必须标注数据级别" }
 
+  specs:
+    rules:
+      - { id: ORG-S-001, rule: "每个 spec 聚焦单一行为，追溯到 proposal 能力点" }
+      - { id: ORG-S-002, rule: "含前置条件、输入、预期行为、异常场景、测试场景" }
+      - { id: ORG-S-003, rule: "不含实现代码和 SQL，可含接口定义和返回值结构" }
+      - { id: ORG-S-004, rule: "正常+异常场景（异常≥1），数据处理标注安全级别" }
+
   design:
     rules:
-      - { id: ORG-D-001, rule: "引用 proposal 需求范围，不重复业务描述" }
+      - { id: ORG-D-001, rule: "引用 proposal 需求范围与 specs 定义的行为，不重复业务描述" }
       - { id: ORG-D-002, rule: "说明变更影响范围（模块、文件、接口）" }
       - { id: ORG-D-003, rule: "数据存储→保护方案；外部接口→错误处理方案" }
       - { id: ORG-D-004, rule: "不过度设计，不违反技术栈约束，优先复用已有模式" }
       - { id: ORG-D-005, rule: "接口字段变更时含完整接口设计" }
       - { id: ORG-D-006, rule: "变更涉及上线时必须包含回滚方案" }
       - { id: ORG-D-007, rule: "新增依赖必须说明理由和替代方案评估" }
-
-  specs:
-    rules:
-      - { id: ORG-S-001, rule: "每个 spec 聚焦单一行为，追溯到 design 方案点" }
-      - { id: ORG-S-002, rule: "含前置条件、输入、预期行为、异常场景、测试场景" }
-      - { id: ORG-S-003, rule: "不含实现代码和 SQL，可含接口定义和返回值结构" }
-      - { id: ORG-S-004, rule: "正常+异常场景（异常≥1），数据处理标注安全级别" }
 
   tasks:
     rules:
