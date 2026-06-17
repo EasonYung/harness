@@ -1,0 +1,29 @@
+id: java
+label: Java
+rules:
+  - { id: JAVA-001, rule: "可关闭资源（InputStream/OutputStream/Connection/Reader/Writer 等）必须用 try-with-resources 管理，禁止手动 close 后忽略异常", severity: block, enforcement: lintable }
+  - { id: JAVA-002, rule: "禁止用 == 或 != 判断对象相等（包装类型 Integer/Long 有缓存陷阱、字符串 intern 不保证），统一用 equals / Objects.equals", severity: block, enforcement: lintable }
+  - { id: JAVA-003, rule: "异常按具体类型捕获并处理；禁止 catch (Exception|Throwable) 兜底吞异常或空 catch 块，必须记录或向上传播", severity: block, enforcement: lintable }
+  - { id: JAVA-004, rule: "重写 equals 必须同时重写 hashCode，二者覆盖字段须一致；compareTo 须与 equals 保持一致", severity: block, enforcement: lintable }
+  - { id: JAVA-005, rule: "公共 API 与返回值禁止用 null 表示“无值”：集合返回空集合、无值用 Optional 或 @Nullable 显式标注", severity: warn, enforcement: lintable }
+  - { id: JAVA-006, rule: "日期时间统一用 java.time（LocalDate/Instant/ZonedDateTime），禁止遗留 Date/Calendar", severity: warn, enforcement: lintable }
+  - { id: JAVA-007, rule: "不可变优先：字段尽量 final，对外返回集合用不可变视图或防御性拷贝；共享可变状态须显式同步或用并发集合/原子类", severity: warn, enforcement: prompt-only }
+  - { id: JAVA-008, rule: "泛型优先于原类型（List<String> 而非裸 List）；禁止 @SuppressWarnings(\"unchecked\"|\"rawtypes\") 绕过类型检查，除非同行注释原因", severity: warn, enforcement: lintable }
+  - { id: JAVA-009, rule: "循环内的字符串拼接必须用 StringBuilder，禁止在循环中用 + 拼接（产生大量临时对象）", severity: warn, enforcement: lintable }
+  - { id: JAVA-010, rule: "禁止丢失原始异常堆栈：捕获后包装抛出必须透传 cause（new XxxException(msg, e)），禁止 catch 后 throw new 丢掉 cause", severity: warn, enforcement: prompt-only }
+  - { id: JAVA-T-001, rule: "单测用项目既有断言框架（JUnit），断言须表达明确意图并断言具体值，禁止仅 print 或无断言的验证", severity: warn, enforcement: prompt-only }
+  - { id: JAVA-T-002, rule: "单测不得依赖外部网络/真实文件系统/真实系统时间，须用桩、内存实现（如 H2）或测试固件隔离", severity: warn, enforcement: prompt-only }
+  - { id: JAVA-T-003, rule: "资源型测试（连接/文件/临时目录）须在 @After/@AfterEach 或 try-with-resources 中关闭清理，禁止跨用例泄漏", severity: warn, enforcement: prompt-only }
+rendering:
+  common_groups:
+    - title: "Java 约束"
+      source: "rules"
+      filter: { exclude_prefix: "JAVA-T-" }
+      format: "severity_tagged"
+  phases:
+    tasks:
+      groups:
+        - title: "Java 任务约束"
+          source: "rules"
+          filter: { id_prefix: "JAVA-T-" }
+          format: "severity_tagged"
